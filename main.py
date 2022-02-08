@@ -12,8 +12,8 @@ def get_last_comic_num():
     return response.json()['num']
 
 
-def load_comic(filename):
-    comic_num = random.randint(1, get_last_comic_num())
+def load_comic(filename, last_comic_num):
+    comic_num = random.randint(1, last_comic_num)
 
     url = f'https://xkcd.com/{comic_num}/info.0.json'
     response = requests.get(url)
@@ -55,8 +55,7 @@ def upload_photo(access_token, group_id, filename):
     return decoded_response.values()
 
 
-def save_photo(access_token, group_id, filename):
-    server, photo, hash = upload_photo(access_token, group_id, filename)
+def save_photo(access_token, group_id, filename, server, photo, hash):
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     payload = {
         'v': '5.131',
@@ -71,10 +70,7 @@ def save_photo(access_token, group_id, filename):
     return response.json()['response'][0]
 
 
-def post_photo(access_token, group_id, filename):
-    comment = load_comic(filename)
-    photo = save_photo(access_token, group_id, filename)
-
+def post_photo(access_token, group_id, filename, comment, saved_photo):
     url = 'https://api.vk.com/method/wall.post'
     payload = {
         'v': '5.131',
@@ -82,7 +78,7 @@ def post_photo(access_token, group_id, filename):
         'owner_id': group_id,
         'from_group': 1,
         'message': comment,
-        'attachments': 'photo{}_{}'.format(photo['owner_id'], photo['id'])
+        'attachments': 'photo{}_{}'.format(saved_photo['owner_id'], saved_photo['id'])
     }
     response = requests.post(url, params=payload)
     response.raise_for_status()
@@ -95,7 +91,11 @@ def main():
     vk_group_id = os.getenv('VK_GROUP_ID')
     filename = 'comic.png'
 
-    post_photo(vk_access_token, vk_group_id, filename)
+    last_comic_num = get_last_comic_num()
+    comment = load_comic(filename, last_comic_num)
+    server, photo, hash = upload_photo(vk_access_token, vk_group_id, filename)
+    saved_photo = save_photo(vk_access_token, vk_group_id, filename, server, photo, hash)
+    post_photo(vk_access_token, vk_group_id, filename, comment, saved_photo)
 
 
 if __name__ == '__main__':
