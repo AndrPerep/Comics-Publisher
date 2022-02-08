@@ -18,15 +18,16 @@ def load_random_comic(filename, last_comic_num):
     url = f'https://xkcd.com/{comic_num}/info.0.json'
     response = requests.get(url)
     response.raise_for_status()
+    decoded_response = response.json()
 
-    img_url = response.json()['img']
+    img_url = decoded_response['img']
     img_response = requests.get(img_url)
     img_response.raise_for_status()
 
     with open(filename, 'wb') as file:
         file.write(img_response.content)
 
-    comment = response.json()['alt']
+    comment = decoded_response['alt']
     return comment
 
 
