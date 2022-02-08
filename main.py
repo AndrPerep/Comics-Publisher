@@ -12,7 +12,7 @@ def get_last_comic_num():
     return response.json()['num']
 
 
-def load_comic(filename, last_comic_num):
+def load_random_comic(filename, last_comic_num):
     comic_num = random.randint(1, last_comic_num)
 
     url = f'https://xkcd.com/{comic_num}/info.0.json'
@@ -55,7 +55,7 @@ def upload_photo(access_token, group_id, filename):
     return decoded_response.values()
 
 
-def save_photo(access_token, group_id, filename, server, photo, hash):
+def save_photo_on_server(access_token, group_id, filename, server, photo, hash):
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     payload = {
         'v': '5.131',
@@ -70,7 +70,7 @@ def save_photo(access_token, group_id, filename, server, photo, hash):
     return response.json()['response'][0]
 
 
-def post_photo(access_token, group_id, filename, comment, saved_photo):
+def post_photo_in_vk(access_token, group_id, filename, comment, saved_photo):
     url = 'https://api.vk.com/method/wall.post'
     payload = {
         'v': '5.131',
@@ -91,11 +91,11 @@ def main():
     filename = 'comic.png'
 
     last_comic_num = get_last_comic_num()
-    comment = load_comic(filename, last_comic_num)
+    comment = load_random_comic(filename, last_comic_num)
     try:
         server, photo, hash = upload_photo(vk_access_token, vk_group_id, filename)
-        saved_photo = save_photo(vk_access_token, vk_group_id, filename, server, photo, hash)
-        post_photo(vk_access_token, vk_group_id, filename, comment, saved_photo)
+        saved_photo = save_photo_on_server(vk_access_token, vk_group_id, filename, server, photo, hash)
+        post_photo_in_vk(vk_access_token, vk_group_id, filename, comment, saved_photo)
     finally:
         os.remove(filename)
 
