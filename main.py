@@ -82,7 +82,6 @@ def post_photo(access_token, group_id, filename, comment, saved_photo):
     }
     response = requests.post(url, params=payload)
     response.raise_for_status()
-    os.remove(filename)
 
 
 def main():
@@ -93,9 +92,12 @@ def main():
 
     last_comic_num = get_last_comic_num()
     comment = load_comic(filename, last_comic_num)
-    server, photo, hash = upload_photo(vk_access_token, vk_group_id, filename)
-    saved_photo = save_photo(vk_access_token, vk_group_id, filename, server, photo, hash)
-    post_photo(vk_access_token, vk_group_id, filename, comment, saved_photo)
+    try:
+        server, photo, hash = upload_photo(vk_access_token, vk_group_id, filename)
+        saved_photo = save_photo(vk_access_token, vk_group_id, filename, server, photo, hash)
+        post_photo(vk_access_token, vk_group_id, filename, comment, saved_photo)
+    finally:
+        os.remove(filename)
 
 
 if __name__ == '__main__':
