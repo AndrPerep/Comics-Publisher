@@ -4,6 +4,11 @@ import os
 from dotenv import load_dotenv
 
 
+def check_vk_api_response(decoded_response):
+    if 'error' in decoded_response:
+        raise requests.HTTPError(decoded_response['error'])
+
+
 def get_last_comic_num():
     url = 'https://xkcd.com/info.0.json'
     response = requests.get(url)
@@ -39,9 +44,10 @@ def get_upload_url(access_token, group_id):
     }
     response = requests.get(url, params=payload)
     response.raise_for_status()
+    decoded_response = response.json()
+    check_vk_api_response(decoded_response)
 
-    decoded_response = response.json()['response']
-    return decoded_response['upload_url']
+    return decoded_response['response']['upload_url']
 
 
 def upload_photo(access_token, group_id, filename):
@@ -52,7 +58,9 @@ def upload_photo(access_token, group_id, filename):
         }
         response = requests.post(url, files=files)
         response.raise_for_status()
-    decoded_response = response.json()
+        decoded_response = response.json()
+    check_vk_api_response(decoded_response)
+
     return decoded_response.values()
 
 
@@ -67,8 +75,10 @@ def save_photo_on_server(access_token, group_id, filename, server, photo, hash):
     }
     response = requests.post(url, params=payload)
     response.raise_for_status()
+    decoded_response = response.json()
+    check_vk_api_response(decoded_response)
 
-    return response.json()['response'][0]
+    return decoded_response['response'][0]
 
 
 def post_photo_in_vk(access_token, group_id, filename, comment, saved_photo):
@@ -83,6 +93,7 @@ def post_photo_in_vk(access_token, group_id, filename, comment, saved_photo):
     }
     response = requests.post(url, params=payload)
     response.raise_for_status()
+    check_vk_api_response(response.json())
 
 
 def main():
