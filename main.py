@@ -64,12 +64,12 @@ def upload_photo(access_token, filename):
     return decoded_response.values()
 
 
-def save_photo_on_server(access_token, server, photo, hash):
+def save_photo_on_server(access_token, server, photo, photo_hash):
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     payload = {
         'v': '5.131',
         'access_token': access_token,
-        'hash': hash,
+        'hash': photo_hash,
         'photo': photo,
         'server': server
     }
@@ -105,8 +105,8 @@ def main():
     last_comic_num = get_last_comic_num()
     comment = load_random_comic(filename, last_comic_num)
     try:
-        server, photo, hash = upload_photo(vk_access_token, filename)
-        saved_photo = save_photo_on_server(vk_access_token, server, photo, hash)
+        server, photo, photo_hash = upload_photo(vk_access_token, filename)
+        saved_photo = save_photo_on_server(vk_access_token, server, photo, photo_hash)
         post_photo_in_vk(vk_access_token, vk_group_id, comment, saved_photo)
     finally:
         os.remove(filename)
