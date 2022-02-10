@@ -36,7 +36,7 @@ def load_random_comic(filename, last_comic_num):
     return comment
 
 
-def get_upload_url(access_token, group_id):
+def get_upload_url(access_token):
     url = 'https://api.vk.com/method/photos.getWallUploadServer'
     payload = {
         'v': '5.131',
@@ -50,9 +50,9 @@ def get_upload_url(access_token, group_id):
     return decoded_response['response']['upload_url']
 
 
-def upload_photo(access_token, group_id, filename):
+def upload_photo(access_token, filename):
     with open(f'./{filename}', 'rb') as file:
-        url = get_upload_url(access_token, group_id)
+        url = get_upload_url(access_token)
         files = {
             'photo': file
         }
@@ -64,7 +64,7 @@ def upload_photo(access_token, group_id, filename):
     return decoded_response.values()
 
 
-def save_photo_on_server(access_token, group_id, filename, server, photo, hash):
+def save_photo_on_server(access_token, server, photo, hash):
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     payload = {
         'v': '5.131',
@@ -81,7 +81,7 @@ def save_photo_on_server(access_token, group_id, filename, server, photo, hash):
     return decoded_response['response'][0]
 
 
-def post_photo_in_vk(access_token, group_id, filename, comment, saved_photo):
+def post_photo_in_vk(access_token, group_id, comment, saved_photo):
     url = 'https://api.vk.com/method/wall.post'
     payload = {
         'v': '5.131',
@@ -105,9 +105,9 @@ def main():
     last_comic_num = get_last_comic_num()
     comment = load_random_comic(filename, last_comic_num)
     try:
-        server, photo, hash = upload_photo(vk_access_token, vk_group_id, filename)
-        saved_photo = save_photo_on_server(vk_access_token, vk_group_id, filename, server, photo, hash)
-        post_photo_in_vk(vk_access_token, vk_group_id, filename, comment, saved_photo)
+        server, photo, hash = upload_photo(vk_access_token, filename)
+        saved_photo = save_photo_on_server(vk_access_token, server, photo, hash)
+        post_photo_in_vk(vk_access_token, vk_group_id, comment, saved_photo)
     finally:
         os.remove(filename)
 
